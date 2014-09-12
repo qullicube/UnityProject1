@@ -7,6 +7,7 @@ public class PlayerCamera : MonoBehaviour {
 	public float speed = 10.0f;
 	public float rotationSpeed = 10.0f;
 	public Vector3 center = new Vector3(0, 0, 0);
+	public int orientation = 0;
 
 	const float SPEED_THRESHOLD = 20.0f;
 
@@ -16,7 +17,7 @@ public class PlayerCamera : MonoBehaviour {
 
 	void OnGUI()
 	{
-		if (GUI.Button(new Rect(Screen.width - 100, Screen.height - 80, 100, 80), ">>"))
+		/*if (GUI.Button(new Rect(Screen.width - 100, Screen.height - 80, 100, 80), ">>"))
 		{
 			StopAllCoroutines();
 			StartCoroutine(Rotate(target.transform.position, new Vector3(0, -90.0f, 0)));
@@ -25,11 +26,33 @@ public class PlayerCamera : MonoBehaviour {
 		{
 			StopAllCoroutines();
 			StartCoroutine(Rotate(target.transform.position, new Vector3(0, 90.0f, 0)));
+		}*/
+	}
+
+	void OnInput()
+	{
+		if (Input.GetButtonDown("L1"))
+		{
+			StopAllCoroutines();
+			StartCoroutine(Rotate(target.transform.position, new Vector3(0, 90.0f, 0)));
+			orientation = (orientation + 1) % 4;
+		}
+
+		if (Input.GetButtonDown("R1"))
+		{
+			StopAllCoroutines();
+			StartCoroutine(Rotate(target.transform.position, new Vector3(0, -90.0f, 0)));
+			orientation--;
+			if (orientation < 0)
+				orientation += 4;
 		}
 	}
 	
 	// Update is called once per frame
 	void Update () {
+
+		OnInput();
+
 		if (target != null)
 		{
 			if (speed > SPEED_THRESHOLD) speed = SPEED_THRESHOLD;
@@ -82,4 +105,5 @@ public class PlayerCamera : MonoBehaviour {
 	{
 		return angle * (point - pivot) + pivot;
 	}
+
 }
