@@ -38,12 +38,12 @@ public class TileMap : MonoBehaviour
 
 	public Vector3 GetPosition(int index)
 	{
-		index = hashes[index];
+		index = hashes [index];
 		return new Vector3(((index % maxColumns) - (maxColumns / 2)) * tileSize, 0, ((index / maxColumns) - (maxColumns / 2)) * tileSize);
 	}
 	public void GetPosition(int index, out int x, out int z)
 	{
-		index = hashes[index];
+		index = hashes [index];
 		x = (index % maxColumns) - (maxColumns / 2);
 		z = (index / maxColumns) - (maxColumns / 2);
 	}
@@ -53,7 +53,7 @@ public class TileMap : MonoBehaviour
 		PathTile r, l, f, b;
 		for (int i = 0; i < instances.Count; i++)
 		{
-			var tile = instances[i].GetComponent<PathTile>();
+			var tile = instances [i].GetComponent<PathTile>();
 			if (tile != null)
 			{
 				int x, z;
@@ -93,7 +93,7 @@ public class TileMap : MonoBehaviour
 		var index = GetIndex(toX, toZ);
 		if (index >= 0)
 		{
-			var other = instances[index].GetComponent<PathTile>();
+			var other = instances [index].GetComponent<PathTile>();
 			if (other != null)
 			{
 				tile.connections.Add(other);
@@ -106,7 +106,7 @@ public class TileMap : MonoBehaviour
 	{
 		var index = GetIndex(x, z);
 		if (index >= 0)
-			return instances[index].GetComponent<PathTile>();
+			return instances [index].GetComponent<PathTile>();
 		else
 			return null;
 	}
@@ -137,7 +137,7 @@ public class TileMap : MonoBehaviour
 				while (tile != null)
 				{
 					path.Add(tile);
-					tile = source[tile];
+					tile = source [tile];
 				}
 				path.Reverse();
 				return true;
@@ -171,6 +171,4 @@ public class TileMap : MonoBehaviour
 	{
 		return FindPath(start, end, path, tile => true);
 	}
-
-	
 }
