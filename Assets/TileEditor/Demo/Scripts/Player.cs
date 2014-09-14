@@ -1,26 +1,72 @@
 using UnityEngine;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 
 public class Player : MonoBehaviour
 {
+	#region Inspector Variables
+	
 	public bool displayPathLine;
 	public float walkSpeed;
 	public float gravity;
 	
-	TileMap tileMap;
+	#endregion
+	
+	#region Hidden Variables
+	
+	//TileMap tileMap;
 	List<PathTile> path = new List<PathTile>();
 	LineRenderer lineRenderer;
 	bool busy;
+	
+	#endregion
+	
+	#region Public Functions
+	
+	[Obsolete("Current not used, but might be used in the future")]
+	public bool IsBusy()
+	{
+		return busy;
+	}
+	
+	public void MoveTo(TileMap map, Vector3 target)
+	{
+		if (map.FindPath(transform.position, target, path))
+		{
+			lineRenderer.SetVertexCount(path.Count);
+			
+			if (displayPathLine)
+			{
+				for (int i = 0; i < path.Count; i++)
+					lineRenderer.SetPosition(i, path [i].transform.position);
+			}
+			else
+			{
+				lineRenderer.enabled = false;
+			}
+			
+			StopAllCoroutines();
+			StartCoroutine(WalkPath());
+		}
+	}
+	
+	#endregion
 
+	#region Start
+	
 	void Start()
 	{
 		lineRenderer = GetComponent<LineRenderer>();
-		tileMap = FindObjectOfType(typeof(TileMap)) as TileMap;
-		enabled = tileMap != null;
+		//tileMap = FindObjectOfType(typeof(TileMap)) as TileMap;
+		//enabled = tileMap != null;
 		busy = false;
 	}
+	
+	#endregion
 
+	#region Update
+	
 	void Update()
 	{
 		/*
@@ -46,33 +92,11 @@ public class Player : MonoBehaviour
 		}
 		 * */
 	}
+	
+	#endregion
 
-	public bool IsBusy()
-	{
-		return busy;
-	}
-
-	public void MoveTo(Vector3 target)
-	{
-		if (tileMap.FindPath(transform.position, target, path))
-		{
-			lineRenderer.SetVertexCount(path.Count);
-
-			if (displayPathLine)
-			{
-				for (int i = 0; i < path.Count; i++)
-					lineRenderer.SetPosition(i, path [i].transform.position);
-			}
-			else
-			{
-				lineRenderer.enabled = false;
-			}
-
-			StopAllCoroutines();
-			StartCoroutine(WalkPath());
-		}
-	}
-
+	#region My Functions
+	
 	IEnumerator WalkPath()
 	{
 		var index = 0;
@@ -137,4 +161,6 @@ public class Player : MonoBehaviour
 				Gizmos.DrawLine(path[i - 1].transform.position, path[i].transform.position);
 		}
 	}*/
+	
+	#endregion
 }
