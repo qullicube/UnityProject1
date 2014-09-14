@@ -117,6 +117,21 @@ public class TileMap : MonoBehaviour
 		return GetPathTile(x, z);
 	}
 	
+	Transform GetTile(int x, int z)
+	{
+		var index = GetIndex(x, z);
+		if (index > 0)
+			return instances [index];
+		else
+			return null;
+	}
+	public Transform GetTile(Vector3 position)
+	{
+		var x = Mathf.RoundToInt(position.x / tileSize);
+		var z = Mathf.RoundToInt(position.z / tileSize);
+		return GetTile(x, z);
+	}
+	
 	public bool FindPath(PathTile start, PathTile end, List<PathTile> path, Predicate<PathTile> isWalkable)
 	{
 		if (!isWalkable(end))
