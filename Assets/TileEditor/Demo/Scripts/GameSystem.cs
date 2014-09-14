@@ -13,10 +13,12 @@ public class GameSystem : MonoBehaviour
 	#region Inspector Variables
 	
 	public GameState state;
-	public List<Player> units;
+	public List<Player> players;
 	public TileMap tileMap;
 	public TileSelector tileSelector;
 	public GameCamera gameCamera;
+	
+	public Player selectedPlayer;
 	
 	#endregion
 	
@@ -71,6 +73,21 @@ public class GameSystem : MonoBehaviour
 		Orientation(ref x, ref z);
 		tileSelector.MoveBy(TileMap, x, z);
 	}
+	public void Selector_SelectPlayer()
+	{
+		Transform tile = tileMap.GetTile(tileSelector.transform);
+		
+		foreach (var player in players)
+		{
+			if (Mathf.Abs(player.transform.position.x - tile.transform.position.x) < Mathf.Epsilon &&
+				Mathf.Abs(player.transform.position.z - tile.transform.position.z) < Mathf.Epsilon)
+			{
+				selectedPlayer = player;	
+			}
+		}
+		selectedPlayer = null;
+	}
+	
 	void Orientation(ref float x, ref float z)
 	{
 		if (gameCamera != null)

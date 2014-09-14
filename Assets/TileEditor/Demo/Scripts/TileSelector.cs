@@ -46,6 +46,11 @@ public class TileSelector : MonoBehaviour
 		this.renderer.sharedMaterial.SetColor("_MainColor", rgba);
 	}
 	
+	public Vector3 GetTilePosition()
+	{
+		
+	}
+	
 	#endregion
 	
 	#region Start
@@ -54,13 +59,13 @@ public class TileSelector : MonoBehaviour
 	{
 		this.renderer.sharedMaterial.color = red;
 		GotoTile(new Vector3(0, 0, -4));
-		time = 0;
 	}
 	
 	#endregion
 	
 	#region Update
 	
+	//May not even need..
 	void Update()
 	{
 		
