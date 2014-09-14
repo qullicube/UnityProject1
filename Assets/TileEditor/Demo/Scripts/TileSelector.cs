@@ -3,24 +3,64 @@ using System.Collections;
 
 public class TileSelector : MonoBehaviour
 {
+	#region Inspector Variables
+	
+	public GameCamera playerCamera;
 
-	public TileMap tileMap;
-	public Player player;
-	public PlayerCamera playerCamera;
-	public float threshold = 0.2f;
+	#endregion
+	
+	#region Hidden Variables
 
-	float time;
 	Color red = new Color(1, 0, 0, 0.8f);
 	Color blue = new Color(0, 0, 1, 0.8f);
 
-	// Use this for initialization
+	#endregion
+	
+	#region Public Functions
+	
+	/* Move relatively to the current tile position on a TileMap */
+	public void MoveBy(TileMap map, Vector3 position, Vector3 offset = new Vector3(0, 0.01f, 0))
+	{
+		var currentPos = this.transform.position;
+		currentPos.y = 0;
+		MoveTo(map, currentPos, offset);
+	}
+	
+	/* Move to an absolute tile position on a TileMap */
+	public void MoveTo(TileMap map, Vector3 position, Vector3 offset = new Vector3(0, 0.01f, 0))
+	{
+		var tile = map.GetPathTile(position);
+		if (tile != null)
+			transform.position = tile.positionTop + offset;
+	}
+	
+	/* Move to a point */
+	public void MoveTo(Vector3 position)
+	{
+		transform.position = position;
+	}
+	
+	/* Change tile highlighting color */
+	public void SetColor(Color rgba)
+	{
+		this.renderer.sharedMaterial.SetColor("_MainColor", rgba);
+	}
+	
+	#endregion
+	
+	#region Start
+	
 	void Start()
 	{
+		this.renderer.sharedMaterial.color = red;
 		GotoTile(new Vector3(0, 0, -4));
 		time = 0;
 	}
 	
-	// Update is called once per frame
+	#endregion
+	
+	#region Update
+	
 	void Update()
 	{
 		
@@ -29,13 +69,7 @@ public class TileSelector : MonoBehaviour
 						return;
 				}*/
 
-		this.renderer.sharedMaterial.color = red;
-		
-		if (Input.GetButtonDown("Fire1"))
-		{
-			player.MoveTo(transform.position);
-		}
-
+		/*
 		time += Time.deltaTime;
 
 		var x = Input.GetAxis("Horizontal");
@@ -59,25 +93,32 @@ public class TileSelector : MonoBehaviour
 
 		Orientation(ref x, ref z);
 
-		if ((x != 0 || z != 0) && threshold - time < 0.0f)
+		if ((Mathf.Abs(x) < 0.01f || Mathf.Abs(z) < 0.01f) && threshold - time < 0.0f)
 		{
-			GotoTile(transform.position + new Vector3(x, -transform.position.y, z));
+			MoveToTile(tileMap, transform.position + new Vector3(x, -transform.position.y, z));
 			time = 0;
 		}
+		*/
 	}
-
-	void GotoTile(Vector3 position)
+	
+	#endregion
+	
+	#region My Functions
+	
+	[Obsolete("Please use MoveTo instead")]
+	void GotoTile(TileMap map, Vector3 position)
 	{
-		var tile = tileMap.GetPathTile(position);
+		var tile = map.GetPathTile(position);
 		if (tile != null)
 			transform.position = tile.positionTop + new Vector3(0, 0.01f, 0);
 	}
-
+	
+	[Obsolete("Moved to GameSystem class")]
 	void Orientation(ref float x, ref float z)
 	{
 		if (playerCamera != null)
 		{
-			var orientation = playerCamera.orientation;
+			var orientation = playerCamera.Orientation;
 			var t = 0.0f;
 
 			switch (orientation)
@@ -103,4 +144,5 @@ public class TileSelector : MonoBehaviour
 			}
 		}
 	}
+	#endregion
 }
