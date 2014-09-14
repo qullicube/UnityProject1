@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System;
 using System.Collections;
 
 public class TileSelector : MonoBehaviour
@@ -19,7 +20,7 @@ public class TileSelector : MonoBehaviour
 	#region Public Functions
 	
 	/* Move relatively to the current tile position on a TileMap */
-	public void MoveBy(TileMap map, Vector3 position, Vector3 offset = new Vector3(0, 0.01f, 0))
+	public void MoveBy(TileMap map, Vector3 position, Vector3 offset)
 	{
 		var currentPos = this.transform.position;
 		currentPos.y = 0;
@@ -27,7 +28,7 @@ public class TileSelector : MonoBehaviour
 	}
 	
 	/* Move to an absolute tile position on a TileMap */
-	public void MoveTo(TileMap map, Vector3 position, Vector3 offset = new Vector3(0, 0.01f, 0))
+	public void MoveTo(TileMap map, Vector3 position, Vector3 offset)
 	{
 		var tile = map.GetPathTile(position);
 		if (tile != null)
@@ -39,71 +40,11 @@ public class TileSelector : MonoBehaviour
 	{
 		transform.position = position;
 	}
-	
+	 
 	/* Change tile highlighting color */
 	public void SetColor(Color rgba)
 	{
 		this.renderer.sharedMaterial.SetColor("_MainColor", rgba);
-	}
-	
-	public Vector3 GetTilePosition()
-	{
-		
-	}
-	
-	#endregion
-	
-	#region Start
-	
-	void Start()
-	{
-		this.renderer.sharedMaterial.color = red;
-		GotoTile(new Vector3(0, 0, -4));
-	}
-	
-	#endregion
-	
-	#region Update
-	
-	//May not even need..
-	void Update()
-	{
-		
-		/*if (player.IsBusy ()) {
-						this.renderer.sharedMaterial.color = blue;
-						return;
-				}*/
-
-		/*
-		time += Time.deltaTime;
-
-		var x = Input.GetAxis("Horizontal");
-		var z = Input.GetAxis("Vertical");
-
-		var factor = 0.2f;
-
-		if (x > factor)
-			x = 1;
-		else if (x < -factor)
-			x = -1;
-		else
-			x = 0;
-
-		if (z > factor)
-			z = 1;
-		else if (z < -factor)
-			z = -1;
-		else
-			z = 0;
-
-		Orientation(ref x, ref z);
-
-		if ((Mathf.Abs(x) < 0.01f || Mathf.Abs(z) < 0.01f) && threshold - time < 0.0f)
-		{
-			MoveToTile(tileMap, transform.position + new Vector3(x, -transform.position.y, z));
-			time = 0;
-		}
-		*/
 	}
 	
 	#endregion
