@@ -14,11 +14,15 @@ public class PathTile : MonoBehaviour
 		{
 			var ray = new Ray(transform.position + Vector3.up * 256.0f, Vector3.down);
 			var topPosition = transform.position;
-			RaycastHit hit;
+			RaycastHit[] hit = Physics.RaycastAll(ray, 256.0f);
 
-			if (Physics.Raycast(ray, out hit))
+			if (hit != null && hit.Length > 0)
 			{
-				topPosition = hit.point;
+				foreach (var item in hit)
+				{
+					if(item.transform.IsChildOf(this.transform))
+						topPosition = item.point;	
+				}
 			}
 
 			return topPosition;

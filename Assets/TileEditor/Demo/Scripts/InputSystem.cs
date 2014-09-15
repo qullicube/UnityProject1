@@ -41,11 +41,9 @@ public class InputSystem : MonoBehaviour
 					}
 					
 					//Input states
-					var rotateLeft = Input.GetButtonDown("L2");
-					var rotateRight = Input.GetButtonDown("R2");
+					var rotateLeft = Input.GetButtonDown("L1");
+					var rotateRight = Input.GetButtonDown("R1");
 					var tilt = rotateLeft && rotateRight;
-					var x = Input.GetAxis("Horizontal");
-					var z = Input.GetAxis("Vertical");
 						
 					//Rotate-Tilt
 					if (tilt)
@@ -62,7 +60,7 @@ public class InputSystem : MonoBehaviour
 					}
 						
 					//Move Tile Selector
-					if (!OnMoveSelector(x, z))
+					if (!OnMoveSelector())
 					{
 						//Action
 						OnAction();
@@ -77,32 +75,25 @@ public class InputSystem : MonoBehaviour
 	float time;
 	const float MIN_TIME = 0.1f; //TODO: find right fit (?)
 	const float MAX_TIME = 0.3f;
-	const float EPSILON = 0.02f;
 	
-	bool OnMoveSelector(float x, float z)
+	bool OnMoveSelector()
 	{
+		//Return range -1 to 1
+		var x = Input.GetAxis("Horizontal");
+		var z = Input.GetAxis("Vertical");
+
+
 		var processed = false;
 		//if x && y is large, then move fast
 		var multiplier = 1 - Mathf.Max(x * x, z * z);
 		var threshold = Mathf.Lerp(MIN_TIME, MAX_TIME, multiplier);
-		
-		//Dirty work here.. pseudo float-to-int on same var
-		if (x > EPSILON)	
-			x = 1;
-		else if (x < -EPSILON)
-			x = -1;
-		else
-			x = 0;
-		
-		if (z > EPSILON)
-			z = 1;
-		else if (z < -EPSILON)
-			z = -1;
-		else
-			z = 0;
+
+		//Return only -1 0 1
+		x = Input.GetAxisRaw("Horizontal");
+		z = Input.GetAxisRaw("Vertical");
 			
 		//Move only after interval is reached
-		if (time >= threshold && ((Mathf.Abs(x) > EPSILON || Mathf.Abs(z) > EPSILON)))
+		if (time >= threshold && ((Mathf.Abs(x) > 0.01f || Mathf.Abs(z) > 0.01f)))
 		{
 			gameSystem.Selector_MoveBy((int)x, (int)z);
 			processed = true;
@@ -122,13 +113,13 @@ public class InputSystem : MonoBehaviour
 		if (Input.GetButtonDown("X"))
 		{
 			//Select unit or DoMove
-			if (gameSystem.selectedPlayer != null)
+			if (gameSystem.selectedPlayer == null)
 			{
 				gameSystem.Selector_SelectPlayer();
 			}
 			else
 			{
-				gameSystem.SelectedPlayer_MoveToTileSelector();
+				gameSystem.SelectedPlayer_MoveToSelectedMovable();
 			}
 		}
 		else if (Input.GetButtonDown("^"))

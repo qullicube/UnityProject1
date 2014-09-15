@@ -10,6 +10,8 @@ public class Player : MonoBehaviour
 	public bool displayPathLine;
 	public float walkSpeed;
 	public float gravity;
+
+	public float walkPower;
 	
 	#endregion
 	
@@ -28,6 +30,48 @@ public class Player : MonoBehaviour
 	public bool IsBusy()
 	{
 		return busy;
+	}
+
+	public void MoveTo(TileMap map, Vector3 target, List<PathTile> walkable, Action finishedCallback)
+	{
+		if (map.FindPath(transform.position, target, path, tile => walkable.Contains(tile)))
+		{
+			lineRenderer.SetVertexCount(path.Count);
+
+			if (displayPathLine)
+			{
+				for (int i = 0; i < path.Count; i++)
+					lineRenderer.SetPosition(i, path[i].transform.position);
+			}
+			else
+			{
+				lineRenderer.enabled = false;
+			}
+
+			StopAllCoroutines();
+			StartCoroutine(WalkPath(finishedCallback));
+		}
+	}
+	
+	public void MoveTo(TileMap map, Vector3 target, List<PathTile> walkable)
+	{
+		if (map.FindPath(transform.position, target, path, tile => walkable.Contains(tile)))
+		{
+			lineRenderer.SetVertexCount(path.Count);
+
+			if (displayPathLine)
+			{
+				for (int i = 0; i < path.Count; i++)
+					lineRenderer.SetPosition(i, path[i].transform.position);
+			}
+			else
+			{
+				lineRenderer.enabled = false;
+			}
+
+			StopAllCoroutines();
+			StartCoroutine(WalkPath());
+		}
 	}
 	
 	public void MoveTo(TileMap map, Vector3 target)
@@ -96,6 +140,20 @@ public class Player : MonoBehaviour
 	#endregion
 
 	#region My Functions
+
+	IEnumerator WalkPath(Action finished)
+	{
+		var index = 0;
+		busy = true;
+		while (index < path.Count)
+		{
+			yield return StartCoroutine(WalkTo2(path[index].positionTop));
+			index++;
+		}
+		busy = false;
+		finished();
+	}
+
 	
 	IEnumerator WalkPath()
 	{

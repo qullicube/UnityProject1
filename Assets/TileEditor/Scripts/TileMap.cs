@@ -24,6 +24,7 @@ public class TileMap : MonoBehaviour
 
 	void Start()
 	{
+		Debug.Log(instances.Count);
 		UpdateConnections();
 	}
 
@@ -102,6 +103,7 @@ public class TileMap : MonoBehaviour
 		}
 		return null;
 	}
+
 	PathTile GetPathTile(int x, int z)
 	{
 		var index = GetIndex(x, z);
@@ -110,13 +112,6 @@ public class TileMap : MonoBehaviour
 		else
 			return null;
 	}
-	public PathTile GetPathTile(Vector3 position)
-	{
-		var x = Mathf.RoundToInt(position.x / tileSize);
-		var z = Mathf.RoundToInt(position.z / tileSize);
-		return GetPathTile(x, z);
-	}
-	
 	Transform GetTile(int x, int z)
 	{
 		var index = GetIndex(x, z);
@@ -124,6 +119,12 @@ public class TileMap : MonoBehaviour
 			return instances [index];
 		else
 			return null;
+	}
+	public PathTile GetPathTile(Vector3 position)
+	{
+		var x = Mathf.RoundToInt(position.x / tileSize);
+		var z = Mathf.RoundToInt(position.z / tileSize);
+		return GetPathTile(x, z);
 	}
 	public Transform GetTile(Vector3 position)
 	{

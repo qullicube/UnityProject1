@@ -36,6 +36,7 @@ public class GameCamera : MonoBehaviour
 
 		Vector3 INITIAL_EULER_ANGLES = new Vector3 (30, 45, 0); //Tested values
 
+		bool busy = false;
 		bool dirty = false; //TODO: use this to optimize
 
 	#endregion
@@ -45,6 +46,8 @@ public class GameCamera : MonoBehaviour
 		/* Tilt camera downward, reset after MAX_TILT_LEVEL is reached */
 		public void Tilt ()
 		{
+			if (busy) return;
+
 				tiltLevel++;
 		
 				if (tiltLevel > MAX_TILT_LEVEL) {
@@ -57,6 +60,8 @@ public class GameCamera : MonoBehaviour
 		/* Rotate 90 degree clockwise */
 		public void RotateRight ()
 		{
+			if (busy) return;
+
 				StopAllCoroutines ();
 				StartCoroutine (Rotate (target.transform.position, new Vector3 (0, -90.0f, 0)));
 				orientation--;
@@ -66,6 +71,8 @@ public class GameCamera : MonoBehaviour
 		/* Rotate 90 degree counter-clockwise */
 		public void RotateLeft ()
 		{
+			if (busy) return;
+
 				StopAllCoroutines ();
 				StartCoroutine (Rotate (target.transform.position, new Vector3 (0, 90.0f, 0)));
 				orientation = (orientation + 1) % 4;
@@ -74,6 +81,8 @@ public class GameCamera : MonoBehaviour
 		/* Zoom In until MAX_ZOOM_LEVEL is reached, after which zoom level is reset to back initial level*/
 		public void Zoom ()
 		{
+			if (busy) return;
+
 				StopAllCoroutines ();
 				zoomLevel = ++zoomLevel % MAX_ZOOM_LEVEL;
 				StartCoroutine (Zoom (2.5f + zoomLevel * 1.75f));
@@ -173,12 +182,16 @@ public class GameCamera : MonoBehaviour
 				var initSize = camera.orthographicSize;
 				var timeCount = 0.0f;
 
+				busy = true;
+
 				while (timeCount < 1.0f) {
 						camera.orthographicSize = (orthoSize - initSize) * timeCount + initSize;
 						yield return 0;
 						timeCount += Time.deltaTime * zoomSpeed;
 				}
 				camera.orthographicSize = orthoSize;
+
+				busy = false;
 		}
 
 		//TODO: optimize this
@@ -194,6 +207,8 @@ public class GameCamera : MonoBehaviour
 				var accAngles = Vector3.zero;
 				var accRotation = initRotation;
 
+				busy = true;
+
 				while (timeCount < 1.0f) {
 						var incrementAngle = eulerAngles * Time.deltaTime * rotationSpeed;
 						accAngles += incrementAngle;
@@ -206,7 +221,9 @@ public class GameCamera : MonoBehaviour
 						timeCount += Time.deltaTime * rotationSpeed;
 				}
 				transform.position = destPosition;
-				transform.rotation = destRotation;
+				transform.rotation = Quaternion.Euler(initRotation.eulerAngles + eulerAngles);
+
+				busy = false;
 		}
 		IEnumerator Rotate (Vector3 pivot, Vector3 eulerAngles)
 		{
@@ -216,6 +233,8 @@ public class GameCamera : MonoBehaviour
 				var destRotation = initRotation + eulerAngles;
 
 				var timeCount = 0.0f;
+
+				busy = true;
 
 				while (timeCount < 1.0f) {
 						//Using lerp?
@@ -228,6 +247,8 @@ public class GameCamera : MonoBehaviour
 				}
 				transform.position = destPosition;
 				transform.rotation = Quaternion.Euler (destRotation);
+
+				busy = false;
 		}
 	
 		static Vector3 RotatePointAroundPivot (Vector3 point, Vector3 pivot, Quaternion angle)

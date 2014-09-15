@@ -16,7 +16,7 @@ public class TileHighlightAnimation : MonoBehaviour
 		{
 				this.renderer.material.SetFloat ("_Step", step);
 				step += speed * Time.deltaTime;
-				if (step >= 2.0f)
+				if (step >= 1.0f)
 						step = 0.0f;
 		}
 }

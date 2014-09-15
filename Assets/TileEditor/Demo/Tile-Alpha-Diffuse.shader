@@ -13,31 +13,12 @@ CGINCLUDE
 		uniform float _Step;
 		
 		void surf (Input IN, inout SurfaceOutput o) {
-			float2 uv = IN.uv_MainTex;
-			float bound = 0.0f;
+			float2 v = IN.uv_MainTex - 0.5f;
+			float r = length(v);
+			v = normalize(v);
 			
-			if(uv.x < 0.5f - bound && uv.y < 0.5f - bound)
-			{
-				uv.x -= _Step;
-				uv.y -= _Step;
-			}
-			if(uv.x < 0.5f - bound && uv.y > 0.5f + bound)
-			{
-				uv.x -= _Step;
-				uv.y += _Step;
-			}
-			if(uv.x > 0.5f + bound && uv.y < 0.5f - bound)
-			{
-				uv.x += _Step;
-				uv.y -= _Step;
-			}
-			if(uv.x > 0.5f + bound && uv.y > 0.5f + bound)
-			{
-				uv.x += _Step;
-				uv.y += _Step;
-			}
-			
-			
+			float2 uv = (0.5f - fmod(r + _Step *0.5f, 0.5f)) * v + 0.5f; 
+
 			fixed4 c = tex2D(_MainTex, uv) * _Color;
 			o.Albedo = c.rgb;
 			o.Alpha = c.a;

@@ -22,7 +22,7 @@ public class TileSelector : MonoBehaviour
 	/* Move relatively to the current tile position on a TileMap */
 	public void MoveBy(TileMap map, Vector3 position, Vector3 offset)
 	{
-		var currentPos = this.transform.position;
+		var currentPos = this.transform.position + position;
 		currentPos.y = 0;
 		MoveTo(map, currentPos, offset);
 	}
