@@ -133,7 +133,7 @@ public class GameSystem : MonoBehaviour
 		
 	public void SelectedPlayer_MoveToTileSelector()
 	{
-		SelectedPlayer_MoveTo(tileMap, tileSelector.transform.position);
+		SelectedPlayer_MoveTo(tileSelector.transform.position);
 	}
 	public void SelectedPlayer_MoveTo(Vector3 position)
 	{
