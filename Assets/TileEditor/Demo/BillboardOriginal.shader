@@ -2,6 +2,7 @@
    Properties {
       [PerRendererData] _MainTex ("Texture Image", 2D) = "white" {}
 		_Color ("Tint", Color) = (1,1,1,1)
+		_Flip ("Flipped", Range(-1.0, 1.0)) = 1.0
    }
    SubShader {
 		Tags
@@ -27,27 +28,29 @@
  
          // User-specified uniforms            
          uniform sampler2D _MainTex;
-		 uniform fixed4 _Color;        
+		 uniform fixed4 _Color;
+		 uniform float _Flip;        
  
          struct vertexInput {
             float4 vertex : POSITION;
-			float4 color    : COLOR;
+	    float4 color    : COLOR;
             float4 tex : TEXCOORD0;
          };
          struct vertexOutput {
             float4 pos : SV_POSITION;
-			float4 color    : COLOR;
+	    float4 color    : COLOR;
             float4 tex : TEXCOORD0;
          };
  
          vertexOutput vert(vertexInput input) 
          {
             vertexOutput output;
- 
+ 			float4 zdepth = mul(UNITY_MATRIX_MVP, input.vertex);
             output.pos = mul(UNITY_MATRIX_P, 
               mul(UNITY_MATRIX_MV, float4(0.0, 0.0, 0.0, 1.0))
-              + float4(input.vertex.x, input.vertex.y, 0.0, 0.0));
- 
+              + float4(round(_Flip) * input.vertex.x, input.vertex.y, 0.0, 0.0));
+            output.pos.z = zdepth.z;
+ 			
             output.tex = input.tex;
 			output.color = input.color * _Color;
 		

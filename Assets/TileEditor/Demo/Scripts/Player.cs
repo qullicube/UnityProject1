@@ -3,6 +3,21 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 
+public enum PlayerDirection
+{
+	DOWN = 0,
+	LEFT = 1,
+	UP = 2,
+	RIGHT = 3
+}
+
+public enum PlayerState
+{
+	Idle,
+	Walk,
+	Jump
+}
+
 public class Player : MonoBehaviour
 {
 	#region Inspector Variables
@@ -13,13 +28,22 @@ public class Player : MonoBehaviour
 
 	public float walkPower;
 	
+	public PlayerDirection direction;
+	public PlayerState state;
+	
 	#endregion
 	
 	#region Hidden Variables
 	
 	//TileMap tileMap;
 	List<PathTile> path = new List<PathTile>();
-	LineRenderer lineRenderer;
+	SpriteAnimator spriteAnimator;
+	
+	PlayerState lastState;
+	PlayerDirection lastDirection;
+	int lastCameraDirection;
+	string currentSpriteAnimation;
+	
 	bool busy;
 	
 	#endregion
@@ -36,18 +60,6 @@ public class Player : MonoBehaviour
 	{
 		if (map.FindPath(transform.position, target, path, tile => walkable.Contains(tile)))
 		{
-			lineRenderer.SetVertexCount(path.Count);
-
-			if (displayPathLine)
-			{
-				for (int i = 0; i < path.Count; i++)
-					lineRenderer.SetPosition(i, path[i].transform.position);
-			}
-			else
-			{
-				lineRenderer.enabled = false;
-			}
-
 			StopAllCoroutines();
 			StartCoroutine(WalkPath(finishedCallback));
 		}
@@ -57,18 +69,6 @@ public class Player : MonoBehaviour
 	{
 		if (map.FindPath(transform.position, target, path, tile => walkable.Contains(tile)))
 		{
-			lineRenderer.SetVertexCount(path.Count);
-
-			if (displayPathLine)
-			{
-				for (int i = 0; i < path.Count; i++)
-					lineRenderer.SetPosition(i, path[i].transform.position);
-			}
-			else
-			{
-				lineRenderer.enabled = false;
-			}
-
 			StopAllCoroutines();
 			StartCoroutine(WalkPath());
 		}
@@ -78,18 +78,6 @@ public class Player : MonoBehaviour
 	{
 		if (map.FindPath(transform.position, target, path))
 		{
-			lineRenderer.SetVertexCount(path.Count);
-			
-			if (displayPathLine)
-			{
-				for (int i = 0; i < path.Count; i++)
-					lineRenderer.SetPosition(i, path [i].transform.position);
-			}
-			else
-			{
-				lineRenderer.enabled = false;
-			}
-			
 			StopAllCoroutines();
 			StartCoroutine(WalkPath());
 		}
@@ -101,10 +89,16 @@ public class Player : MonoBehaviour
 	
 	void Start()
 	{
-		lineRenderer = GetComponent<LineRenderer>();
 		//tileMap = FindObjectOfType(typeof(TileMap)) as TileMap;
 		//enabled = tileMap != null;
 		busy = false;
+		
+		spriteAnimator = GetComponentInChildren<SpriteAnimator>();
+		
+		state = PlayerState.Idle;
+		direction = PlayerDirection.DOWN;
+		lastCameraDirection = Camera.main.GetComponent<GameCamera>().Orientation;
+		UpdateDirection();
 	}
 	
 	#endregion
@@ -135,11 +129,26 @@ public class Player : MonoBehaviour
 			}
 		}
 		 * */
+		 
+		//Orientation update
+		if (state != lastState || direction != lastDirection || lastCameraDirection != Camera.main.GetComponent<GameCamera>().Orientation)
+		{
+			UpdateDirection();
+			lastState = state;
+			lastDirection = direction;
+			lastCameraDirection = Camera.main.GetComponent<GameCamera>().Orientation;
+		}
 	}
 	
 	#endregion
 
 	#region My Functions
+
+	void UpdateDirection()
+	{
+		var cameraProjectedDirection = ((int)direction - Camera.main.GetComponent<GameCamera>().Orientation + 4) % 4;
+		spriteAnimator.Play(state.ToString(), cameraProjectedDirection);
+	}
 
 	IEnumerator WalkPath(Action finished)
 	{
@@ -147,7 +156,7 @@ public class Player : MonoBehaviour
 		busy = true;
 		while (index < path.Count)
 		{
-			yield return StartCoroutine(WalkTo2(path[index].positionTop));
+			yield return StartCoroutine(WalkTo(path [index].positionTop));
 			index++;
 		}
 		busy = false;
@@ -161,35 +170,79 @@ public class Player : MonoBehaviour
 		busy = true;
 		while (index < path.Count)
 		{
-			yield return StartCoroutine(WalkTo2(path [index].positionTop));
+			yield return StartCoroutine(WalkTo(path [index].positionTop));
 			index++;
 		}
+		state = PlayerState.Idle;
 		busy = false;
+	}
+	
+	/*Move deterministic */
+	IEnumerator WalkTo(Vector3 position)
+	{
+		var x = position.x - transform.position.x;
+		var z = position.z - transform.position.z;
+		
+		if (z >= 0.01f)
+		{
+			direction = PlayerDirection.LEFT;
+		}
+		else if (z <= -0.01f)
+		{
+			direction = PlayerDirection.RIGHT;
+		}
+		
+		if (x >= 0.01f)
+		{
+			direction = PlayerDirection.UP;
+		}
+		else if (x <= -0.01f)
+		{
+			direction = PlayerDirection.DOWN;
+		}
+		
+		if (Math.Abs(position.y - transform.position.y) > 0.01f)
+		{ 
+			yield return StartCoroutine(WalkToWithJump(position));
+		}
+		else
+		{
+			yield return StartCoroutine(WalkToWithoutJump(position));
+		}
 	}
 
 	/* Move without jumping */
-	IEnumerator WalkTo(Vector3 position)
+	IEnumerator WalkToWithoutJump(Vector3 position)
 	{
+		var tmp = state;
+		
+		state = PlayerState.Walk;
 		while (Vector3.Distance(transform.position, position) > 0.01f)
 		{
 			transform.position = Vector3.MoveTowards(transform.position, position, walkSpeed * Time.deltaTime);
 			yield return 0;
 		}
+		state = tmp;
+		
 		transform.position = position;
 	}
 
 	/* This one concern about jumping */
-	IEnumerator WalkTo2(Vector3 position)
+	IEnumerator WalkToWithJump(Vector3 position)
 	{
 		var time = 0.0f;
-		var start = transform.position;
+		var start = transform.position;		
+		var tmp = state;
 		
+		state = PlayerState.Jump;
 		while (time < 1.0f)
 		{
 			transform.position = Plerp(start, position, time);
 			time += Time.deltaTime * walkSpeed;
 			yield return 0;
 		}
+		state = tmp;
+		
 		transform.position = position;
 	}
 	

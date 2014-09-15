@@ -24,7 +24,6 @@ public class TileMap : MonoBehaviour
 
 	void Start()
 	{
-		Debug.Log(instances.Count);
 		UpdateConnections();
 	}
 
