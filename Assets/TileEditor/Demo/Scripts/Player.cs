@@ -24,6 +24,7 @@ public class Player : MonoBehaviour
 	
 	public bool displayPathLine;
 	public float walkSpeed;
+	public float jumpSpeed;
 	public float gravity;
 
 	public float walkPower;
@@ -38,6 +39,7 @@ public class Player : MonoBehaviour
 	//TileMap tileMap;
 	List<PathTile> path = new List<PathTile>();
 	SpriteAnimator spriteAnimator;
+	CharacterController controller;
 	
 	PlayerState lastState;
 	PlayerDirection lastDirection;
@@ -45,7 +47,10 @@ public class Player : MonoBehaviour
 	string currentSpriteAnimation;
 	
 	bool busy;
-	
+	float offGroundDuration;
+	Vector3 walkVelocity;
+	Vector3 jumpVelocity;
+
 	#endregion
 	
 	#region Public Functions
@@ -63,8 +68,7 @@ public class Player : MonoBehaviour
 			StopAllCoroutines();
 			StartCoroutine(WalkPath(finishedCallback));
 		}
-	}
-	
+	}	
 	public void MoveTo(TileMap map, Vector3 target, List<PathTile> walkable)
 	{
 		if (map.FindPath(transform.position, target, path, tile => walkable.Contains(tile)))
@@ -73,7 +77,6 @@ public class Player : MonoBehaviour
 			StartCoroutine(WalkPath());
 		}
 	}
-	
 	public void MoveTo(TileMap map, Vector3 target)
 	{
 		if (map.FindPath(transform.position, target, path))
@@ -82,7 +85,19 @@ public class Player : MonoBehaviour
 			StartCoroutine(WalkPath());
 		}
 	}
-	
+	public void Move(Vector2 move)
+	{
+		walkVelocity.x = (int)Mathf.Round(move.x);
+		walkVelocity.z = (int)Mathf.Round(move.y);
+	}
+	public void Jump(float jump)
+	{
+		if (controller.isGrounded)
+		{
+			jumpVelocity.y = jump * jumpSpeed;
+		}
+	}
+
 	#endregion
 
 	#region Start
@@ -92,13 +107,17 @@ public class Player : MonoBehaviour
 		//tileMap = FindObjectOfType(typeof(TileMap)) as TileMap;
 		//enabled = tileMap != null;
 		busy = false;
-		
+
+		controller = GetComponent<CharacterController>();
 		spriteAnimator = GetComponentInChildren<SpriteAnimator>();
 		
 		state = PlayerState.Idle;
 		direction = PlayerDirection.DOWN;
 		lastCameraDirection = Camera.main.GetComponent<GameCamera>().Orientation;
 		UpdateDirection();
+
+		walkVelocity = Vector3.zero;
+		jumpVelocity = Vector3.zero;
 	}
 	
 	#endregion
@@ -138,6 +157,43 @@ public class Player : MonoBehaviour
 			lastDirection = direction;
 			lastCameraDirection = Camera.main.GetComponent<GameCamera>().Orientation;
 		}
+
+		if (!busy)
+		{
+			var nextState = PlayerState.Idle ;
+
+			if (walkVelocity.magnitude > 0.01f)
+			{
+				nextState = PlayerState.Walk;
+				controller.SimpleMove(walkVelocity * walkSpeed);
+
+				//Change direction
+				if (walkVelocity.z > 0.0f)
+					direction = PlayerDirection.LEFT;
+				if (walkVelocity.z < 0.0f)
+					direction = PlayerDirection.RIGHT;
+				if (walkVelocity.x > 0.0f)
+					direction = PlayerDirection.UP;
+				if (walkVelocity.x < 0.0f)
+					direction = PlayerDirection.DOWN;
+			}
+
+			if (!controller.isGrounded && offGroundDuration > 1/(jumpSpeed*jumpSpeed))
+			{
+				nextState = PlayerState.Jump;
+			}
+
+			if (!controller.isGrounded && offGroundDuration <= 1/(jumpSpeed*jumpSpeed))
+				offGroundDuration += Time.deltaTime;
+
+			if (controller.isGrounded)
+				offGroundDuration = 0.0f;
+
+			jumpVelocity.y -= gravity * Time.deltaTime;
+
+			controller.Move(jumpVelocity * Time.deltaTime);
+			state = nextState;
+		}
 	}
 	
 	#endregion
@@ -168,12 +224,14 @@ public class Player : MonoBehaviour
 	{
 		var index = 0;
 		busy = true;
+
+		var tmp = state;
 		while (index < path.Count)
 		{
 			yield return StartCoroutine(WalkTo(path [index].positionTop));
 			index++;
 		}
-		state = PlayerState.Idle;
+		state = tmp;
 		busy = false;
 	}
 	

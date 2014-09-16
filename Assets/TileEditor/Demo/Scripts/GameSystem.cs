@@ -5,13 +5,63 @@ using System.Collections.Generic;
 public enum GameState
 {
 	BATTLE,
+	FIELDMAP,
 	PAUSE
 }
 
 public class GameSystem : MonoBehaviour
 {
+
+	#region Properties
+
+	public GameState State
+	{
+		set
+		{
+			if (value != state)
+			{
+				//exit
+				switch (state)
+				{
+					case GameState.PAUSE:
+						break;
+					case GameState.BATTLE:
+						Selector_DeselectPlayer();
+						tileSelector.gameObject.SetActive(false);
+						break;
+					case GameState.FIELDMAP:
+						gameCamera.target = null;
+						break;
+					default:
+						break;
+				}
+
+				switch (value)
+				{
+					case GameState.PAUSE:
+						break;
+					case GameState.BATTLE:
+						tileSelector.gameObject.SetActive(true);
+						gameCamera.target = tileSelector.gameObject;
+						break;
+					case GameState.FIELDMAP:
+						gameCamera.target = GameObject.FindGameObjectWithTag("Main Player");
+						break;
+				}
+			}
+
+			state = value;
+		}
+		get
+		{
+			return state;
+		}
+	}
+
+	#endregion
+
 	#region Inspector Variables
-	
+
 	public GameState state;
 	public List<Player> players;
 	public TileMap tileMap;
@@ -55,6 +105,73 @@ public class GameSystem : MonoBehaviour
 			return;
 		
 		gameCamera.RotateRight();
+	}
+
+	void Orientation(ref float x, ref float z)
+	{
+		if (gameCamera != null)
+		{
+			var orientation = gameCamera.Orientation;
+			var t = 0.0f;
+
+			//TODO: Change this according to presetting
+
+			//This is done to make sure that tile selector consistently move respective to camera orientation
+			switch (orientation)
+			{
+				case 0:
+					t = x;
+					x = z;
+					z = -t;
+					break;
+				case 1:
+					z = -z;
+					x = -x;
+					break;
+				case 2:
+					t = z;
+					z = x;
+					x = -t;
+					break;
+				case 3:
+					break;
+				default:
+					break;
+			}
+		}
+	}
+	void Orientation(ref int x, ref int z)
+	{
+		if (gameCamera != null)
+		{
+			var orientation = gameCamera.Orientation;
+			var t = 0;
+
+			//TODO: Change this according to presetting
+
+			//This is done to make sure that tile selector consistently move respective to camera orientation
+			switch (orientation)
+			{
+				case 0:
+					t = x;
+					x = z;
+					z = -t;
+					break;
+				case 1:
+					z = -z;
+					x = -x;
+					break;
+				case 2:
+					t = z;
+					z = x;
+					x = -t;
+					break;
+				case 3:
+					break;
+				default:
+					break;
+			}
+		}
 	}
 	
 	#endregion
@@ -101,39 +218,6 @@ public class GameSystem : MonoBehaviour
 	{
 		Player_HideMovableTile();
 		selectedPlayer = null;
-	}
-	void Orientation(ref int x, ref int z)
-	{
-		if (gameCamera != null)
-		{
-			var orientation = gameCamera.Orientation;
-			var t = 0;
-			
-			//TODO: Change this according to presetting
-			
-			//This is done to make sure that tile selector consistently move respective to camera orientation
-			switch (orientation)
-			{
-				case 0:
-					t = x;
-					x = z;
-					z = -t;
-					break;
-				case 1:
-					z = -z;
-					x = -x;
-					break;
-				case 2:
-					t = z;
-					z = x;
-					x = -t;
-					break;
-				case 3:
-					break;
-				default:
-					break;
-			}
-		}
 	}
 	
 	#endregion
@@ -184,8 +268,21 @@ public class GameSystem : MonoBehaviour
 		walkableTileHighlights.Clear();
 		walkableTiles.Clear();
 	}
-
 				
+	#endregion
+
+	#region FieldMap Functions
+		
+		public void FieldMap_MainPlayerMove(float x, float z)
+		{
+			Orientation(ref x, ref z);
+			GameObject.FindGameObjectWithTag("Main Player").GetComponent<Player>().Move(new Vector2(x, z));
+		}
+		public void FieldMap_MainPlayerJump(float y)
+		{
+			GameObject.FindGameObjectWithTag("Main Player").GetComponent<Player>().Jump(y);
+		}
+
 	#endregion
 
 	#region Player Moveable Tiles Algorithm
@@ -303,7 +400,7 @@ public class GameSystem : MonoBehaviour
 			Selector_MoveTo(0, -5);
 		}
 
-		state = GameState.BATTLE;
+		State = GameState.FIELDMAP;
 	}
 
 	#endregion
@@ -312,6 +409,7 @@ public class GameSystem : MonoBehaviour
 
 	void Update()
 	{
+
 	}
 	
 	#endregion

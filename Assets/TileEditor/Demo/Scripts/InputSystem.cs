@@ -27,7 +27,7 @@ public class InputSystem : MonoBehaviour
 					//Unpause game
 					if (Input.GetButtonDown("Start"))
 					{
-						gameSystem.state = GameState.BATTLE;
+						gameSystem.State = GameState.BATTLE;
 					}
 				}
 				break;
@@ -36,7 +36,7 @@ public class InputSystem : MonoBehaviour
 					//Pause game
 					if (Input.GetButtonDown("Start"))
 					{
-						gameSystem.state = GameState.PAUSE;
+						gameSystem.State = GameState.PAUSE;
 						return;
 					}
 					
@@ -64,6 +64,40 @@ public class InputSystem : MonoBehaviour
 					{
 						//Action
 						OnAction();
+					}
+				}
+				break;
+			case GameState.FIELDMAP:
+				{
+					//Input states
+					var rotateLeft = Input.GetButtonDown("L1");
+					var rotateRight = Input.GetButtonDown("R1");
+					var tilt = rotateLeft && rotateRight;
+
+					//Rotate-Tilt
+					if (tilt)
+					{
+						gameSystem.Camera_Tilt();
+					}
+					else if (rotateLeft)
+					{
+						gameSystem.Camera_RotateLeft();
+					}
+					else if (rotateRight)
+					{
+						gameSystem.Camera_RotateRight();
+					}
+
+					//Walk
+					var x = Input.GetAxisRaw("Horizontal");
+					var z = Input.GetAxisRaw("Vertical");
+					var jmp = Input.GetButtonDown("X");
+
+					gameSystem.FieldMap_MainPlayerMove(x,z);
+
+					if (jmp)
+					{
+						gameSystem.FieldMap_MainPlayerJump(1.0f);
 					}
 				}
 				break;
