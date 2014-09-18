@@ -5,29 +5,29 @@ using System.Collections;
 [RequireComponent(typeof(Animator))]
 public class SpriteAnimator : MonoBehaviour
 {
-	Animator spriteAnimator;
-	SpriteRenderer spriteRenderer;
+		Animator spriteAnimator;
+		SpriteRenderer spriteRenderer;
 		
-	//down-left = 0, up-left = 1, etc.
-	public void Play(string animationName, int orientation = 0)
-	{
-		orientation = orientation % 4;
+		//down-left = 0, up-left = 1, etc.
+		public void Play (string animationName, int orientation)
+		{
+				orientation = orientation % 4;
 				
-		var bit0 = orientation % 2;
-		var bit1 = orientation / 2;
+				var bit0 = orientation % 2;
+				var bit1 = orientation / 2;
 				
-		var flipFront = bit0 ^ bit1;
-		var flipSide = bit1;
+				var flipFront = bit0 ^ bit1;
+				var flipSide = bit1;
 		
-		spriteAnimator.Play(animationName + flipFront.ToString());
-		spriteRenderer.material.SetFloat("_Flip", flipSide == 0 ? 1.0f : -1.0f);
-	}
+				spriteAnimator.Play (animationName + flipFront.ToString ());
+				spriteRenderer.material.SetFloat ("_Flip", flipSide == 0 ? 1.0f : -1.0f);
+		}
 		
-	void Start()
-	{
-		spriteAnimator = GetComponent<Animator>();
-		spriteRenderer = GetComponent<SpriteRenderer>();
-	}
+		void Start ()
+		{
+				spriteAnimator = GetComponent<Animator> ();
+				spriteRenderer = GetComponent<SpriteRenderer> ();
+		}
 }
 
 /*
