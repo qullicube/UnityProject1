@@ -29,6 +29,7 @@ public class InputSystem : MonoBehaviour
 	
 	#endregion
 
+	#region Input
 		//Input of the system
 		void OnInput ()
 		{
@@ -135,7 +136,7 @@ public class InputSystem : MonoBehaviour
 		
 				return processed;
 		}
-	
+
 		bool OnAction ()
 		{
 				var processed = false; //not sure yet if used
@@ -153,4 +154,6 @@ public class InputSystem : MonoBehaviour
 		
 				return processed;
 		}
+		
+	#endregion
 }

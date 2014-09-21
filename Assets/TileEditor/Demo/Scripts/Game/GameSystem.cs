@@ -353,13 +353,7 @@ public class GameSystem : MonoBehaviour
 						break;
 				case GameState.BATTLE:
 						{
-								if (selectedPlayer != null) {
-										var style = new GUIStyle ();
-										style.fontSize = 20;
-										style.normal.textColor = Color.black;
-
-										GUI.Label (new Rect (Screen.width - 100, Screen.height - 40, 100, 40), "Selected", style);
-								}
+							
 						}
 						break;
 				default:
